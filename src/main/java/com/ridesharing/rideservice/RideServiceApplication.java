@@ -8,7 +8,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class RideServiceApplication {
 
     public static void main(String[] args) {
-        Dotenv dotenv = Dotenv.load(); // loads .env automatically
+        // Load .env
+        Dotenv dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
+
+        // Transfer .env values to System properties so Spring can read them
+        dotenv.entries().forEach(entry -> {
+            System.setProperty(entry.getKey(), entry.getValue());
+        });
+
         SpringApplication.run(RideServiceApplication.class, args);
     }
 
