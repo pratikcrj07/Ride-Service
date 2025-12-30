@@ -18,10 +18,10 @@ public class Ride {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // From JWT
+
     private Long userId;
 
-    // Assigned later
+
     private Long driverId;
 
     @Enumerated(EnumType.STRING)
