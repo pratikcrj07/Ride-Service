@@ -11,7 +11,7 @@ public class RideServiceApplication {
         // Load .env
         Dotenv dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
 
-        // Transfer .env values to System properties so Spring can read them
+
         dotenv.entries().forEach(entry -> {
             System.setProperty(entry.getKey(), entry.getValue());
         });
