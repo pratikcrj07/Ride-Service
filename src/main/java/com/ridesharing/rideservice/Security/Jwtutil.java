@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 
 @Component
-public class JwtUtil {
+public class Jwtutil {
 
     private final Key key;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret) {
+    public Jwtutil(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
