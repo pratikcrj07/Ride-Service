@@ -1,6 +1,5 @@
-package com.ridesharing.rideservice.security;
+package com.ridesharing.rideservice.Security;
 
-import com.ridesharing.rideservice.Security.Jwtutil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
