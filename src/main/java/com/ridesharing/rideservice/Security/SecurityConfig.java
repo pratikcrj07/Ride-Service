@@ -10,7 +10,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -31,34 +30,27 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
 
-
                 .authorizeHttpRequests(auth -> auth
-
-
                         .requestMatchers("/actuator/health").permitAll()
-
-
-                        .requestMatchers(HttpMethod.POST, "/api/rides/request")
-                        .hasRole("USER")
-
-                        .requestMatchers(HttpMethod.POST, "/api/rides/cancel/**")
-                        .hasRole("USER")
-
-
-                        .requestMatchers("/api/driver/**")
-                        .hasRole("DRIVER")
-
-
-                        .requestMatchers("/api/admin/**")
-                        .hasRole("ADMIN")
-
-
+                        .requestMatchers(HttpMethod.POST, "/api/rides/request").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/rides/cancel/**").hasRole("USER")
+                        .requestMatchers("/api/driver/**").hasRole("DRIVER")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-
 
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+
+    @Bean
+    public org.springframework.security.core.userdetails.UserDetailsService userDetailsService() {
+        return username -> {
+            throw new org.springframework.security.core.userdetails.UsernameNotFoundException(
+                    "JWT authentication only"
+            );
+        };
     }
 }
