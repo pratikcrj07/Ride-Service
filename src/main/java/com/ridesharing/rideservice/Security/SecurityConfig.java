@@ -26,19 +26,17 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        // Ride request by USER
+
                         .requestMatchers(HttpMethod.POST, "/api/rides/request")
                         .hasRole("USER")
 
-                        // Driver APIs
+
                         .requestMatchers("/api/driver/**")
                         .hasRole("DRIVER")
-
-                        // Admin (future)
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
 
-                        // Everything else secured
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(JwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
