@@ -1,13 +1,15 @@
-package com.ridesharing.rideservice.Security;
+package com.ridesharing.rideservice.security;
 
-import io.jsonwebtoken.Claims;
+import com.ridesharing.rideservice.Security.Jwtutil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,35 +20,53 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final Jwtutil jwtUtil;
+    private final Jwtutil jwtutil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+        final String authHeader = request.getHeader("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-            String token = authHeader.substring(7);
-            Claims claims = jwtUtil.validateToken(token);
+        final String token = authHeader.substring(7);
 
-            String userId = claims.getSubject(); // MUST be userId
-            String role = claims.get("role", String.class);
+        try {
+            if (!jwtutil.validateToken(token)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            Long userId = jwtutil.extractUserId(token);
+            String role = jwtutil.extractRole(token); // USER / DRIVER / ADMIN
+
+            List<SimpleGrantedAuthority> authorities =
+                    List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
                             userId,
                             null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                            authorities
                     );
 
-            SecurityContextHolder.getContext()
-                    .setAuthentication(authentication);
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        } catch (Exception ex) {
+            SecurityContextHolder.clearContext();
         }
 
-        chain.doFilter(request, response);
+        filterChain.doFilter(request, response);
     }
 }
