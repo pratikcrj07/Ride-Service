@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "rides")
 @Getter
@@ -18,10 +17,7 @@ public class Ride {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     private Long userId;
-
-
     private Long driverId;
 
     @Enumerated(EnumType.STRING)
@@ -29,7 +25,6 @@ public class Ride {
 
     private Double pickupLat;
     private Double pickupLon;
-
     private Double dropLat;
     private Double dropLon;
 
@@ -37,4 +32,10 @@ public class Ride {
 
     private LocalDateTime requestedAt;
     private LocalDateTime completedAt;
+
+    @PrePersist
+    public void onCreate() {
+        this.requestedAt = LocalDateTime.now();
+        this.status = RideStatus.REQUESTED;
+    }
 }
