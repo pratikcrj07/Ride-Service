@@ -32,7 +32,7 @@ public class RideService {
 
         Ride saved = rideRepository.save(ride);
 
-        kafkaTemplate.send("ride.requested", saved.getId().toString());
+        kafkaTemplate.send("ride-events", saved.getId().toString());
 
         return saved;
     }
@@ -61,6 +61,6 @@ public class RideService {
         ride.setStatus(RideStatus.CANCELLED);
         rideRepository.save(ride);
 
-        kafkaTemplate.send("ride.cancelled", rideId.toString());
+        kafkaTemplate.send("ride-events", rideId.toString());
     }
 }
