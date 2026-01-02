@@ -9,15 +9,13 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+import java.time.Instant;
 @Service
 @RequiredArgsConstructor
 public class RideService {
 
     private final RideRepository rideRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
-
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public Ride requestRide(RideRequestDto dto, Long userId) {
@@ -28,21 +26,21 @@ public class RideService {
                 .pickupLon(dto.getPickupLon())
                 .dropLat(dto.getDropLat())
                 .dropLon(dto.getDropLon())
-                .build(); // status + requestedAt handled by @PrePersist
+                .build();
 
         Ride saved = rideRepository.save(ride);
 
-        kafkaTemplate.send("ride-events", saved.getId().toString());
+        RideEvent event = new RideEvent(
+                "RIDE_REQUESTED",
+                saved.getId(),
+                userId,
+                Instant.now()
+        );
+
+        kafkaTemplate.send("ride-events", saved.getId().toString(), event);
 
         return saved;
     }
-
-
-    @Transactional(readOnly = true)
-    public List<Ride> getMyRides(Long userId) {
-        return rideRepository.findByUserIdOrderByRequestedAtDesc(userId);
-    }
-
 
     @Transactional
     public void cancelRide(Long rideId, Long userId) {
@@ -61,6 +59,13 @@ public class RideService {
         ride.setStatus(RideStatus.CANCELLED);
         rideRepository.save(ride);
 
-        kafkaTemplate.send("ride-events", rideId.toString());
+        RideEvent event = new RideEvent(
+                "RIDE_CANCELLED",
+                rideId,
+                userId,
+                Instant.now()
+        );
+
+        kafkaTemplate.send("ride-events", rideId.toString(), event);
     }
 }
