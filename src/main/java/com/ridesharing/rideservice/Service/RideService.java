@@ -3,6 +3,7 @@ package com.ridesharing.rideservice.Service;
 import com.ridesharing.rideservice.DTOs.RideEvent;
 import com.ridesharing.rideservice.DTOs.RideRequestDto;
 import com.ridesharing.rideservice.Entities.Ride;
+import com.ridesharing.rideservice.Entities.RideEventType;
 import com.ridesharing.rideservice.Entities.RideStatus;
 import com.ridesharing.rideservice.Repository.RideRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +33,10 @@ public class RideService {
         Ride saved = rideRepository.save(ride);
 
         RideEvent event = new RideEvent(
-                "RIDE_REQUESTED",
+                RideEventType.RIDE_REQUESTED,
                 saved.getId(),
                 userId,
+                null,                 // driverId is null at request time
                 Instant.now()
         );
 
@@ -61,11 +63,13 @@ public class RideService {
         rideRepository.save(ride);
 
         RideEvent event = new RideEvent(
-                "RIDE_CANCELLED",
+                RideEventType.RIDE_CANCELLED,
                 rideId,
                 userId,
+                null,
                 Instant.now()
         );
+
 
         kafkaTemplate.send("ride-events", rideId.toString(), event);
     }
