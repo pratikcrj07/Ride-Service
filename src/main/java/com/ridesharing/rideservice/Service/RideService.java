@@ -1,5 +1,6 @@
 package com.ridesharing.rideservice.Service;
 
+import com.ridesharing.rideservice.DTOs.RideEvent;
 import com.ridesharing.rideservice.DTOs.RideRequestDto;
 import com.ridesharing.rideservice.Entities.Ride;
 import com.ridesharing.rideservice.Entities.RideStatus;
