@@ -5,6 +5,7 @@ import com.ridesharing.rideservice.Entities.Ride;
 import com.ridesharing.rideservice.Service.RideService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -26,7 +27,8 @@ public class RideController {
             Authentication authentication
     ) {
         Long userId = Long.parseLong(authentication.getName());
-        return ResponseEntity.ok(rideService.requestRide(dto, userId));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(rideService.requestRide(dto, userId));
     }
 
     @GetMapping("/my")
