@@ -11,13 +11,12 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-@Service
+import java.time.Instant;@Service
 @RequiredArgsConstructor
 public class RideService {
 
     private final RideRepository rideRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, RideEvent> kafkaTemplate;
 
     @Transactional
     public Ride requestRide(RideRequestDto dto, Long userId) {
@@ -36,7 +35,7 @@ public class RideService {
                 RideEventType.RIDE_REQUESTED,
                 saved.getId(),
                 userId,
-                null,                 // driverId is null at request time
+                null,
                 Instant.now()
         );
 
@@ -69,7 +68,6 @@ public class RideService {
                 null,
                 Instant.now()
         );
-
 
         kafkaTemplate.send("ride-events", rideId.toString(), event);
     }
