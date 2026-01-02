@@ -11,7 +11,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;@Service
+import java.time.Instant;
+import java.util.List;
+
+@Service
 @RequiredArgsConstructor
 public class RideService {
 
@@ -42,6 +45,11 @@ public class RideService {
         kafkaTemplate.send("ride-events", saved.getId().toString(), event);
 
         return saved;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Ride> getMyRides(Long userId) {
+        return rideRepository.findByUserIdOrderByRequestedAtDesc(userId);
     }
 
     @Transactional
