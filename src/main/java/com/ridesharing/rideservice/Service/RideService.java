@@ -103,5 +103,32 @@ public class RideService {
 
         return saved;
     }
+    @Transactional
+    public Ride startRide(Long rideId, Long driverId) {
+
+        Ride ride = rideRepository.findByIdAndDriverId(rideId, driverId)
+                .orElseThrow(() -> new RuntimeException("Ride not assigned"));
+
+        if (ride.getStatus() != RideStatus.ACCEPTED) {
+            throw new RuntimeException("Ride cannot be started");
+        }
+
+        ride.setStatus(RideStatus.STARTED);
+
+        Ride saved = rideRepository.save(ride);
+
+        kafkaTemplate.send("ride-events",
+                rideId.toString(),
+                new RideEvent(
+                        RideEventType.RIDE_STARTED,
+                        rideId,
+                        ride.getUserId(),
+                        driverId,
+                        Instant.now()
+                )
+        );
+
+        return saved;
+    }
 
 }
