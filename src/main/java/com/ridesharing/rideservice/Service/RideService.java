@@ -79,4 +79,29 @@ public class RideService {
 
         kafkaTemplate.send("ride-events", rideId.toString(), event);
     }
+    @Transactional
+    public Ride acceptRide(Long rideId, Long driverId) {
+
+        Ride ride = rideRepository.findByIdAndStatus(rideId, RideStatus.REQUESTED)
+                .orElseThrow(() -> new RuntimeException("Ride not available"));
+
+        ride.setDriverId(driverId);
+        ride.setStatus(RideStatus.ACCEPTED);
+
+        Ride saved = rideRepository.save(ride);
+
+        kafkaTemplate.send("ride-events",
+                rideId.toString(),
+                new RideEvent(
+                        RideEventType.RIDE_ACCEPTED,
+                        rideId,
+                        ride.getUserId(),
+                        driverId,
+                        Instant.now()
+                )
+        );
+
+        return saved;
+    }
+
 }
