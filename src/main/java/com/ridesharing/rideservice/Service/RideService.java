@@ -159,5 +159,32 @@ public class RideService {
 
         return saved;
     }
+    @Transactional
+    public void driverCancelRide(Long rideId, Long driverId) {
+
+        Ride ride = rideRepository.findByIdAndDriverId(rideId, driverId)
+                .orElseThrow(() -> new RuntimeException("Ride not assigned"));
+
+        if (ride.getStatus() != RideStatus.ACCEPTED) {
+            throw new RuntimeException("Cannot cancel now");
+        }
+
+        ride.setDriverId(null);
+        ride.setStatus(RideStatus.REQUESTED);
+
+        rideRepository.save(ride);
+
+        kafkaTemplate.send("ride-events",
+                rideId.toString(),
+                new RideEvent(
+                        RideEventType.RIDE_CANCELLED,
+                        rideId,
+                        ride.getUserId(),
+                        driverId,
+                        Instant.now()
+                )
+        );
+    }
+
 
 }
