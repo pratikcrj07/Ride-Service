@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -121,6 +122,34 @@ public class RideService {
                 rideId.toString(),
                 new RideEvent(
                         RideEventType.RIDE_STARTED,
+                        rideId,
+                        ride.getUserId(),
+                        driverId,
+                        Instant.now()
+                )
+        );
+
+        return saved;
+    }
+    @Transactional
+    public Ride completeRide(Long rideId, Long driverId) {
+
+        Ride ride = rideRepository.findByIdAndDriverId(rideId, driverId)
+                .orElseThrow(() -> new RuntimeException("Ride not assigned"));
+
+        if (ride.getStatus() != RideStatus.STARTED) {
+            throw new RuntimeException("Ride not in progress");
+        }
+
+        ride.setStatus(RideStatus.COMPLETED);
+        ride.setCompletedAt(LocalDateTime.now());
+
+        Ride saved = rideRepository.save(ride);
+
+        kafkaTemplate.send("ride-events",
+                rideId.toString(),
+                new RideEvent(
+                        RideEventType.RIDE_COMPLETED,
                         rideId,
                         ride.getUserId(),
                         driverId,
