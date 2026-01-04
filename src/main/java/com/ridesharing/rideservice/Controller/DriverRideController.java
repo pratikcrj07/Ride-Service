@@ -4,7 +4,7 @@ package com.ridesharing.rideservice.Controller;
 import com.ridesharing.rideservice.Entities.Ride;
 import com.ridesharing.rideservice.Service.RideService;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
