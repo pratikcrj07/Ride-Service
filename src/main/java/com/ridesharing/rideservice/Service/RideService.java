@@ -21,7 +21,7 @@ public class RideService {
 
     private final RideRepository rideRepository;
     private final KafkaTemplate<String, RideEvent> kafkaTemplate;
-
+    private final RideLockService rideLockService;
     @Transactional
     public Ride requestRide(RideRequestDto dto, Long userId) {
 
