@@ -79,31 +79,42 @@ public class RideService {
         );
 
         kafkaTemplate.send("ride-events", rideId.toString(), event);
+
     }
     @Transactional
     public Ride acceptRide(Long rideId, Long driverId) {
 
-        Ride ride = rideRepository.findByIdAndStatus(rideId, RideStatus.REQUESTED)
-                .orElseThrow(() -> new RuntimeException("Ride not available"));
+        if (!rideLockService.lockRide(rideId)) {
+            throw new RuntimeException("Ride already being accepted");
+        }
 
-        ride.setDriverId(driverId);
-        ride.setStatus(RideStatus.ACCEPTED);
+        try {
+            Ride ride = rideRepository.findByIdAndStatus(rideId, RideStatus.REQUESTED)
+                    .orElseThrow(() -> new RuntimeException("Ride not available"));
 
-        Ride saved = rideRepository.save(ride);
+            ride.setDriverId(driverId);
+            ride.setStatus(RideStatus.ACCEPTED);
 
-        kafkaTemplate.send("ride-events",
-                rideId.toString(),
-                new RideEvent(
-                        RideEventType.RIDE_ACCEPTED,
-                        rideId,
-                        ride.getUserId(),
-                        driverId,
-                        Instant.now()
-                )
-        );
+            Ride saved = rideRepository.save(ride);
 
-        return saved;
+            kafkaTemplate.send("ride-events",
+                    rideId.toString(),
+                    new RideEvent(
+                            RideEventType.RIDE_ACCEPTED,
+                            rideId,
+                            ride.getUserId(),
+                            driverId,
+                            Instant.now()
+                    )
+            );
+
+            return saved;
+        } finally {
+            rideLockService.unlockRide(rideId);
+        }
     }
+
+
     @Transactional
     public Ride startRide(Long rideId, Long driverId) {
 
