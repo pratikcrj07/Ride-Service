@@ -30,11 +30,11 @@ public class DriverLocationService {
                 driverId.toString()
         );
 
-        // 2. Mark driver online
+        //  Mark driver online
         redisTemplate.opsForSet()
                 .add(DRIVER_ONLINE_KEY, driverId.toString());
 
-        // 3. Heartbeat with TTL (driver liveness)
+        //  Heartbeat with TTL (driver liveness)
         redisTemplate.opsForValue().set(
                 heartbeatKey(driverId),
                 "1",
