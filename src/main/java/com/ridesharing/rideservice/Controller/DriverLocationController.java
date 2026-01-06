@@ -4,8 +4,6 @@ import com.ridesharing.rideservice.DTOs.DriverLocationUpdateRequest;
 import com.ridesharing.rideservice.Service.DriverLocationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Request;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +14,8 @@ public class DriverLocationController {
     private final DriverLocationService locationService;
 
     @PostMapping
-    public RequestEntity<Void> updateLocation(
-            @RequestHeader ("X-DRIVER-ID") Long DriverId,
+    public ResponseEntity<Void> updateLocation(
+            @RequestHeader ("X-DRIVER-ID") Long driverId,
             @Valid @RequestBody DriverLocationUpdateRequest request) {
         locationService.updateLocation(
                 driverId,
@@ -39,4 +37,4 @@ public class DriverLocationController {
 
 
 
-}
+
