@@ -17,15 +17,13 @@ public class DriverLocationService {
 
     private final StringRedisTemplate redisTemplate;
 
-    /**
-     * Called every 2–5 seconds from Driver App
-     */
+
     public void updateLocation(
             Long driverId,
             double latitude,
             double longitude) {
 
-        // 1. Update GEO location
+        //  Update GEO location
         redisTemplate.opsForGeo().add(
                 DRIVER_GEO_KEY,
                 new Point(longitude, latitude),
