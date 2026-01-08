@@ -195,6 +195,15 @@ public class RideService {
                         Instant.now()
                 )
         );
+        KafkaTemplate.send ("ride_events",
+                rideId.toString(),
+                new RideEvent(
+                        RideEventType.RIDE_REASSIGN_REQUEST,
+                        rideId,
+                        driverId,
+                        Instant.now()
+                )
+        );
     }
 
 
