@@ -31,6 +31,8 @@ public class RideService {
                 .pickupLon(dto.getPickupLon())
                 .dropLat(dto.getDropLat())
                 .dropLon(dto.getDropLon())
+                .status(RideStatus.REQUESTED)
+                .requestedAt(LocalDateTime.now())
                 .build();
 
         Ride saved = rideRepository.save(ride);
