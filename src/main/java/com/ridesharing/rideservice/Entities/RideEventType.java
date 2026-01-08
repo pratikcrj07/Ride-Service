@@ -5,5 +5,8 @@ public enum RideEventType {
     RIDE_CANCELLED,
     RIDE_ACCEPTED,
     RIDE_STARTED,
-    RIDE_COMPLETED
+    RIDE_COMPLETED ,
+    USER_CANCELLED,
+    DRIVER_CANCELLED,
+
 }
