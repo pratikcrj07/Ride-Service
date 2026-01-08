@@ -65,8 +65,8 @@ public class RideService {
             throw new RuntimeException("Unauthorized cancellation attempt");
         }
 
-        if (ride.getStatus() != RideStatus.REQUESTED) {
-            throw new RuntimeException("Ride cannot be cancelled now");
+        if (ride.getStatus() == RideStatus.STARTED || ride.getStatus() ==RideStatus.COMPLETED) {
+            throw new RuntimeException("Ride cannot be cancelled after Started ");
         }
 
         ride.setStatus(RideStatus.CANCELLED);
