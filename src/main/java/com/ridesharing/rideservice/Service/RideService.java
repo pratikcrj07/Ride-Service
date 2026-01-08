@@ -87,7 +87,7 @@ public class RideService {
     public Ride acceptRide(Long rideId, Long driverId) {
 
         if (!rideLockService.lockRide(rideId)) {
-            throw new RuntimeException("Ride already being accepted");
+            throw new RuntimeException("Ride already being processed");
         }
 
         try {
@@ -99,7 +99,8 @@ public class RideService {
 
             Ride saved = rideRepository.save(ride);
 
-            kafkaTemplate.send("ride-events",
+            kafkaTemplate.send(
+                    "ride-events",
                     rideId.toString(),
                     new RideEvent(
                             RideEventType.RIDE_ACCEPTED,
@@ -115,6 +116,7 @@ public class RideService {
             rideLockService.unlockRide(rideId);
         }
     }
+
 
 
     @Transactional
