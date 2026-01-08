@@ -177,7 +177,7 @@ public class RideService {
                 .orElseThrow(() -> new RuntimeException("Ride not assigned"));
 
         if (ride.getStatus() != RideStatus.ACCEPTED) {
-            throw new RuntimeException("Cannot cancel now");
+            throw new RuntimeException("Cannot cancel at this stage");
         }
 
         ride.setDriverId(null);
@@ -185,22 +185,25 @@ public class RideService {
 
         rideRepository.save(ride);
 
+
         kafkaTemplate.send("ride-events",
                 rideId.toString(),
                 new RideEvent(
-                        RideEventType.RIDE_CANCELLED,
+                        RideEventType.DRIVER_CANCELLED,
                         rideId,
                         ride.getUserId(),
                         driverId,
                         Instant.now()
                 )
         );
-        KafkaTemplate.send ("ride_events",
+
+        kafkaTemplate.send("ride-events",
                 rideId.toString(),
                 new RideEvent(
-                        RideEventType.RIDE_REASSIGN_REQUEST,
+                        RideEventType.RIDE_REASSIGN_REQUESTED,
                         rideId,
-                        driverId,
+                        ride.getUserId(),
+                        null,
                         Instant.now()
                 )
         );
