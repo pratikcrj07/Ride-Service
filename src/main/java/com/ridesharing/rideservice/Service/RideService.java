@@ -22,6 +22,7 @@ public class RideService {
     private final RideRepository rideRepository;
     private final KafkaTemplate<String, RideEvent> kafkaTemplate;
     private final RideLockService rideLockService;
+
     @Transactional
     public Ride requestRide(RideRequestDto dto, Long userId) {
 
@@ -65,7 +66,7 @@ public class RideService {
             throw new RuntimeException("Unauthorized cancellation attempt");
         }
 
-        if (ride.getStatus() == RideStatus.STARTED || ride.getStatus() ==RideStatus.COMPLETED) {
+        if (ride.getStatus() == RideStatus.STARTED || ride.getStatus() == RideStatus.COMPLETED) {
             throw new RuntimeException("Ride cannot be cancelled after Started ");
         }
 
@@ -83,6 +84,7 @@ public class RideService {
         kafkaTemplate.send("ride-events", rideId.toString(), event);
 
     }
+
     @Transactional
     public Ride acceptRide(Long rideId, Long driverId) {
 
@@ -118,7 +120,6 @@ public class RideService {
     }
 
 
-
     @Transactional
     public Ride startRide(Long rideId, Long driverId) {
 
@@ -146,6 +147,7 @@ public class RideService {
 
         return saved;
     }
+
     @Transactional
     public Ride completeRide(Long rideId, Long driverId) {
 
@@ -174,44 +176,41 @@ public class RideService {
 
         return saved;
     }
+
     @Transactional
     public void driverCancelRide(Long rideId, Long driverId) {
 
-        Ride ride = rideRepository.findByIdAndDriverId(rideId, driverId)
-                .orElseThrow(() -> new RuntimeException("Ride not assigned"));
-
-        if (ride.getStatus() != RideStatus.ACCEPTED) {
-            throw new RuntimeException("Cannot cancel at this stage");
+        if (!rideLockService.lockRide(rideId)) {
+            throw new RuntimeException("Ride is being modified");
         }
 
-        ride.setDriverId(null);
-        ride.setStatus(RideStatus.REQUESTED);
+        try {
+            Ride ride = rideRepository.findByIdAndDriverId(rideId, driverId)
+                    .orElseThrow(() -> new RuntimeException("Ride not assigned"));
 
-        rideRepository.save(ride);
+            if (ride.getStatus() != RideStatus.ACCEPTED) {
+                throw new RuntimeException("Driver can cancel only before ride starts");
+            }
 
+            ride.setDriverId(null);
+            ride.setStatus(RideStatus.REASSIGNING);
 
-        kafkaTemplate.send("ride-events",
-                rideId.toString(),
-                new RideEvent(
-                        RideEventType.DRIVER_CANCELLED,
-                        rideId,
-                        ride.getUserId(),
-                        driverId,
-                        Instant.now()
-                )
-        );
+            rideRepository.save(ride);
 
-        kafkaTemplate.send("ride-events",
-                rideId.toString(),
-                new RideEvent(
-                        RideEventType.RIDE_REASSIGN_REQUESTED,
-                        rideId,
-                        ride.getUserId(),
-                        null,
-                        Instant.now()
-                )
-        );
+            kafkaTemplate.send(
+                    "ride-events",
+                    rideId.toString(),
+                    new RideEvent(
+                            RideEventType.DRIVER_CANCELLED,
+                            rideId,
+                            ride.getUserId(),
+                            driverId,
+                            Instant.now()
+                    )
+            );
+
+        } finally {
+            rideLockService.unlockRide(rideId);
+        }
     }
-
-
 }
