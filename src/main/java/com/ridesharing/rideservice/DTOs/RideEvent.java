@@ -15,7 +15,7 @@ import java.time.Instant;
         private RideEventType eventType;
         private Long rideId;
         private Long userId;
-        private Long driverId; // nullable
+        private Long driverId;
         private Instant timestamp;
     }
 
