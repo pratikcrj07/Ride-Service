@@ -1,22 +1,21 @@
 package com.ridesharing.rideservice.DTOs;
 
 import com.ridesharing.rideservice.Entities.RideEventType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.io.Serializable;
 import java.time.Instant;
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public class RideEvent {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class RideEvent implements Serializable {
 
-        private RideEventType eventType;
-        private Long rideId;
-        private Long userId;
-        private Long driverId;
-        private Instant timestamp;
-    }
-
-
+    private RideEventType type;
+    private Long rideId;
+    private Long userId;
+    private Long driverId;
+    private Instant timestamp;
+}
