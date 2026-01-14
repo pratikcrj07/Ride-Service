@@ -22,6 +22,7 @@ public class DriverLocationController {
                 request.getLatitude(),
                 request.getLongitude()
 
+
         );
         return ResponseEntity.ok().build();
 
