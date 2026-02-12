@@ -11,7 +11,7 @@ import java.time.Duration;
 public class RideLockService {
 
     private final StringRedisTemplate redisTemplate;
-
+//Ride lock feat
     public boolean lockRide(Long rideId) {
         String key = "ride:lock:" + rideId;
         Boolean success = redisTemplate.opsForValue()
